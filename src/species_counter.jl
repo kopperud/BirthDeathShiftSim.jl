@@ -12,12 +12,12 @@ mutable struct ExtinctionCounter <: Counter
 end
 
 function SpeciesCounter()
-    counter = SpeciesCounter(1)
+    counter = SpeciesCounter(0)
     return(counter)
 end
 
 function ExtinctionCounter()
-    counter = ExtinctionCounter(1)
+    counter = ExtinctionCounter(0)
     return(counter)
 end
 
@@ -27,6 +27,5 @@ end
 
 function decrement!(counter::T) where {T <: Counter}
     counter.count -= 1
-    @assert n > 0
 end
 

@@ -26,7 +26,6 @@ function simulate_branch!(branch, model, time_limit, taxa_limit, t, species_coun
     waiting_time = rand(wait_distribution)
 
     r = rand()
-    println(t)
 
     if species_counter.count > taxa_limit
         error("too many taxa")
@@ -37,19 +36,18 @@ function simulate_branch!(branch, model, time_limit, taxa_limit, t, species_coun
         branch.times = [time]
         branch.states = [1]
 
+        increment!(species_counter)
         label = string("Species ", species_counter.count)
         Species(branch, label)
-        increment!(species_counter)
-        println(species_counter.count)
     else
 
         if (model.μ / (model.μ + model.λ)) > r
             branch.states = [1]
             branch.times = [waiting_time]
 
+            increment!(extinction_counter)
             label = string("Extinction ", extinction_counter.count)
             ExtinctionEvent(branch, label)
-            increment!(extinction_counter)
         else
             branch.states = [1]
             branch.times = [waiting_time]

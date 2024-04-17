@@ -8,6 +8,7 @@ abstract type InternalNode <: AbstractNode
 end
 
 mutable struct Branch
+    index::Int64
     states::Vector{Int64}
     times::Vector{Float64}
     inbounds::InternalNode
@@ -49,6 +50,7 @@ abstract type TipNode <: AbstractNode
 end
 
 mutable struct Root <: InternalNode
+    index::Int64
     left::Branch
     right::Branch
 
@@ -56,6 +58,7 @@ mutable struct Root <: InternalNode
 end
 
 mutable struct Node <: InternalNode
+    index::Int64
     inbounds::Branch
     left::Branch
     right::Branch
@@ -71,6 +74,7 @@ function Node(branch::Branch)
 end
 
 mutable struct ExtinctionEvent <: TipNode
+    index::Int64
     inbounds::Branch
     label::String
 
@@ -86,6 +90,7 @@ function ExtinctionEvent(branch::Branch, label::String)
 end
 
 mutable struct Species <: TipNode
+    index::Int64
     inbounds::Branch
     label::String
 
