@@ -15,5 +15,7 @@ include("number_of_taxa.jl")
 include("treeplot.jl")
 include("reindex.jl")
 include("tipstates.jl")
+include("prune_extinct.jl")
+include("ladderize.jl")
 
 end # module

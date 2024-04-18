@@ -1,6 +1,6 @@
 export number_of_taxa
 
-function number_of_taxa(root::Root)
+function number_of_taxa(root::T) where {T <: InternalNode}
     species_counter = SpeciesCounter()
 
     number_of_taxa_po!(root, species_counter)
@@ -9,6 +9,15 @@ function number_of_taxa(root::Root)
     return(n)
 end
 
+function number_of_taxa(root::ExtinctionEvent)
+    n = 0
+    return(n)
+end
+
+function number_of_taxa(root::Species)
+    n = 1
+    return(n)
+end
 
 function number_of_taxa_po!(root::InternalNode, species_counter)
     left_node = root.left.outbounds
