@@ -7,10 +7,14 @@ function BirthDeathShiftSim.treeplot(
 )
 
     fig = Makie.Figure()
-    ax = Makie.Axis(fig[1,1], xreversed = true)
+    ax = Makie.Axis(
+        fig[1,1], 
+        xreversed = true,
+        xlabel = "time before present"
+        )
 
     Makie.hidespines!(ax)
-    Makie.hidedecorations!(ax)
+    Makie.hideydecorations!(ax)
 
     ## horizontal lines
     x, y, states = BirthDeathShiftSim.coordinates_horizontal(tree)
@@ -52,12 +56,11 @@ function BirthDeathShiftSim.treeplot(
     tbl = Dict(x => i for (i,x) in enumerate(state_space))
     cs = [tbl[x] for x in c_states]
 
-    cmap = Makie.cgrad([:black, :red, :green], categorical=true)
+    #cmap = Makie.cgrad([:black, :red, :green], categorical=true)
+    cmap = Makie.cgrad([:red, :black, :green], categorical=true)
 
     Makie.linesegments!(ax, points, color = cs, colormap = cmap, linewidth = 2)
-
     return(fig)
-
 end
 
 
