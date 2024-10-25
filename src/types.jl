@@ -1,108 +1,153 @@
-export Root, Node, ExtinctionEvent, Species
-export Branch, Branch_left, Branch_right
+export Branch 
 
-abstract type AbstractNode 
-end
+export Root, Node
+export AncestralSample, TerminalSample
 
-abstract type InternalNode <: AbstractNode
-end
+export ExtinctionEvent, ExtantTip
 
+#####################################
+##
+##   abstract types 
+##
+#####################################
+
+abstract type AbstractNode end
+
+abstract type InternalNode <: AbstractNode end
+abstract type BranchingEvent <: InternalNode end
+
+#####################################
+##
+##   concrete types 
+##
+#####################################
 mutable struct Branch
-    index::Int64
     states::Vector{Int64}
     times::Vector{Float64}
-    inbounds::InternalNode
+
     outbounds::AbstractNode
 
     Branch() = new()
 end
 
-function Branch_left(
-    node::InternalNode, 
-    states::Vector{Int64},
-    times::Vector{Float64})
+mutable struct AncestralSample <: InternalNode
+    outbounds::Branch
 
+    AncestralSample() = new()
+end
+
+abstract type TipNode <: AbstractNode end
+
+
+mutable struct Root <: BranchingEvent
+    children::Vector{Branch}
+
+end
+
+mutable struct Node <: BranchingEvent
+    children::Vector{Branch}
+end
+
+mutable struct ExtinctionEvent <: TipNode
+    label::String
+    
+    ExtinctionEvent() = new()
+end
+
+mutable struct TerminalSample <: TipNode
+    label::String
+
+    TerminalSample() = new()
+end
+
+mutable struct ExtantTip <: TipNode
+    label::String
+
+    ExtantTip() = new()
+end
+
+
+
+#####################################
+##
+##   constructors 
+##
+#####################################
+
+function Root()
+    v = Branch[]
+
+    r = Root(v)
+    return(r)
+end
+
+function Branch(
+    node::T,
+    #states::Vector{Int64},
+    #times::Vector{Float64},
+) where {T <: BranchingEvent}
     branch = Branch()
-    branch.inbounds = node
-    branch.times = times
-    branch.states = states
 
-    node.left = branch
+    branch.states = Int64[]
+    branch.times = Float64[]
+    push!(node.children, branch)
+
     return(branch)
 end
 
-function Branch_right(
-    node::InternalNode, 
-    states::Vector{Int64},
-    times::Vector{Float64})
-
+function Branch(
+    knuckle::AncestralSample,
+    #states::Vector{Int64},
+    #times::Vector{Float64},
+)
     branch = Branch()
-    branch.inbounds = node
-    branch.times = times
-    branch.states = states
 
-    node.right = branch
+    branch.states = Int64[]
+    branch.times = Float64[]
+    knuckle.outbounds = branch
+
     return(branch)
-end
-
-
-abstract type TipNode <: AbstractNode
-end
-
-mutable struct Root <: InternalNode
-    index::Int64
-    left::Branch
-    right::Branch
-
-    Root() = new()
-end
-
-mutable struct Node <: InternalNode
-    index::Int64
-    inbounds::Branch
-    left::Branch
-    right::Branch
-
-    Node() = new()
 end
 
 function Node(branch::Branch)
-    node = Node()
-    node.inbounds = branch
+    v = Branch[]
+    node = Node(v)
     branch.outbounds = node
     return(node)
 end
 
-mutable struct ExtinctionEvent <: TipNode
-    index::Int64
-    inbounds::Branch
-    label::String
-
-    ExtinctionEvent() = new()
-end
-
 function ExtinctionEvent(branch::Branch, label::String)
     ext_event = ExtinctionEvent()
-    ext_event.inbounds = branch
     ext_event.label = label
     branch.outbounds = ext_event
+
     return(ext_event)
 end
 
-mutable struct Species <: TipNode
-    index::Int64
-    inbounds::Branch
-    label::String
-
-    Species() = new()
-end
-
-function Species(branch::Branch, label::String)
-    sp = Species()
-    sp.inbounds = branch
+function ExtantTip(branch::Branch, label::String)
+    sp = ExtantTip()
     sp.label = label
     branch.outbounds = sp
     return(sp)
+end
+
+function AncestralSample(
+    branch::Branch
+    )
+    as = AncestralSample()
+    branch.outbounds = as
+
+    return(as)
+end
+
+
+function TerminalSample(branch::Branch, label::String)
+    ts = TerminalSample()
+
+    branch.outbounds = ts
+    ts.label = label
+
+    return(ts)
 end
 
 

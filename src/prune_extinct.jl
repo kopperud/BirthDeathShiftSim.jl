@@ -30,7 +30,7 @@ function is_completely_extinct(tip::ExtinctionEvent)
     return(true)
 end
 
-function is_completely_extinct(tip::Species)
+function is_completely_extinct(tip::ExtantTip)
     return(false)
 end
 
@@ -115,7 +115,7 @@ function prune_extinct!(node::Node)
 end
 
 function prune_extinct!(node::ExtinctionEvent) end
-function prune_extinct!(node::Species) end
+function prune_extinct!(node::ExtantTip) end
 
 
 

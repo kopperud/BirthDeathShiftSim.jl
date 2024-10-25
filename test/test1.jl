@@ -1,23 +1,64 @@
+using Revise
+using Random
 using BirthDeathShiftSim
+using Distributions
 
-root = Root()
+λ = 1.0
+μ = 1.0
 
-b1 = Branch_left(root, [1, 2], [0.5, 1.8])
-b2 = Branch_right(root, [1], [2.0])
-
-
-sp1 = Species(b1, "gorilla")
-
-
-n1 = Node(b2)
-
-b3 = Branch_left(n1, [1], [2.0])
-b4 = Branch_right(n1, [1, 2], [0.5, 1.5])
-
-sp2 = Species(b3, "chimp")
-sp3 = Species(b4, "human")
-
-postorder(root)
+model = BirthDeathConstant(λ, μ)
 
 
 
+
+
+using BenchmarkTools
+
+model = BirthDeathConstant(0.30, 0.22)
+
+using StatsPlots
+using ProgressMeter
+
+n = Int64[]
+@showprogress for _ in 1:10_000
+    r = simulate(model, 65.0, 10001)
+    nt_left = number_of_taxa(r.children[1].outbounds)
+    nt_right = number_of_taxa(r.children[2].outbounds)
+    if (nt_left > 0) & (nt_right > 0)
+        push!(n, number_of_taxa(r))
+    end
+end
+
+median(n .* 0.62)
+mean(n .* 0.62)
+histogram(n)
+
+number_of_taxa(r.children[1].outbounds)
+number_of_taxa(r.children[2].outbounds)
+
+model = BirthDeathConstant(0.30, 0.23)
+Random.seed!(123); r = simulate(model, 20.0, 1_000_000)
+r = simulate(model, 65.0, 10_000)
+
+treeheight(r)
+
+number_of_taxa(r.children[1].outbounds)
+number_of_taxa(r.children[2].outbounds)
+
+@benchmark number_of_taxa(r)
+
+newick(r)
+
+histogram(n)
+
+function baz()
+    r = 1.05
+
+    if r > 1.0
+        r = 1.0
+    end
+
+    return(r)
+end
+
+baz()
