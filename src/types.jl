@@ -23,6 +23,7 @@ abstract type BranchingEvent <: InternalNode end
 #####################################
 mutable struct Branch
     states::Vector{Int64}
+    states_rate::Vector{Float64}
     times::Vector{Float64}
 
     outbounds::AbstractNode
@@ -90,6 +91,8 @@ function Branch(
 
     branch.states = Int64[]
     branch.times = Float64[]
+    branch.states_rate = Float64[]
+    
     push!(node.children, branch)
 
     return(branch)

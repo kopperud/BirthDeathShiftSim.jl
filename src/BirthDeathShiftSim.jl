@@ -9,7 +9,6 @@ import Random
 include("types.jl")
 include("postorder.jl")
 include("models.jl")
-include("simulate_constant.jl")
 include("species_counter.jl")
 include("number_of_taxa.jl")
 include("treeplot.jl")
@@ -22,5 +21,7 @@ include("draw_event.jl")
 include("treeheight.jl")
 include("write/newick.jl")
 
+include("simulate/simulate_constant.jl")
+include("simulate/continuous_exponential.jl")
 
 end # module
