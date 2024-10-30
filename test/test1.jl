@@ -70,20 +70,19 @@ dμ = LogNormal(log(0.2), 0.1)
 model = BirthDeathShiftContinuous(
     dλ,
     dμ,
-    0.01,
+    0.05,
     0.01,
 )
 
 using Random
 Random.seed!(124); tree = simulate(model, 0.2, 0.1, 40.0, 100_000)
 
-tree = simulate(model, 0.2, 0.1, 40.0, 100_000)
+tree = simulate(model, 0.3, 0.2, 40.0, 100_000)
 
 tr = reconstruct(tree)
 
-
-
 number_of_events(tree)
+number_of_events(tr)
 
 number_of_events(tr)
 
