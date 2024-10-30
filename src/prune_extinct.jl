@@ -1,125 +1,170 @@
 ## prune extinct
 
-#= function prune_extinct!(node::Root)
-    left_branch = node.left
-    left_node = left_branch.outbounds
-
-    right_branch = node.right
-    right_node = right_branch.outbounds   
-
-    if left_node isa ExtinctionEvent
-        new_root = Root()
-    end
-end =#
-
-export is_completely_extinct
-
-function is_completely_extinct(node::T) where {T <: InternalNode}
-    n = number_of_taxa(node)
-
-    if n == 0
-        is_extinct = true
-    else
-        is_extinct = false
-    end
-
-    return(is_extinct)
-end
-
-function is_completely_extinct(tip::ExtinctionEvent)
+function prune_extinct!(tip::ExtinctionEvent)
     return(true)
 end
 
-function is_completely_extinct(tip::ExtantTip)
+function prune_extinct!(tip::ExtantTip)
     return(false)
 end
 
-export prune_extinct!
+function prune_extinct!(branch::Branch)
+    is_extinct = prune_extinct!(branch.outbounds) 
+    return(is_extinct)
+end
 
-function prune_extinct!(root::Root)
-    left_branch = root.left
-    right_branch = root.right
+function prune_extinct!(node::T) where {T <: BranchingEvent}
+    new_children = Branch[]
+    is_extinct = Bool[]
 
-    left_node = left_branch.outbounds
-    right_node = right_branch.outbounds
+    #i = 1
+    while length(node.children) > 0
+        branch = pop!(node.children)
 
-    isextinct = is_completely_extinct(root)
-    if isextinct
-        error("tree is extinct, can't prune")
-    end
+        branch_is_extinct = prune_extinct!(branch)
+        push!(is_extinct, branch_is_extinct)
 
-    left_extinct = is_completely_extinct(left_node)
-    right_extinct = is_completely_extinct(right_node)
+        if !branch_is_extinct
+            push!(new_children, branch)
+        end
+        #i += 1
+    end 
+    
+    node.children = new_children
 
-    if !left_extinct
-        prune_extinct!(left_node)
+    return(all(is_extinct))
+end
+
+function number_of_children(node::T) where {T <: TipNode}
+    return(0)
+end
+
+function number_of_children(node::N) where {N <: BranchingEvent}
+    return(length(node.children))
+end
+
+function number_of_children(node::AncestralSample)
+    return(-1)
+end
+
+function merge_branches!(node::AncestralSample)
+    merge_branches!(node.outbounds)
+    nothing
+end
+
+export merge_branches!
+
+function merge_branches!(node::ExtinctionEvent)
+    error("did not expect to find an extinction event")
+end
+
+function merge_branches!(node::ExtantTip)
+end
+
+
+
+    #=
+function merge_branches!(node::Node, parent_branch::Branch)
+    n_children = length(node.children)
+
+    if n_children == 1
+        this_branch = node.children[1]
+
+        parent_branch.times[end] += this_branch.times[1] 
+        
+        this_branch_episodes = length(this_branch.times)
+        if this_branch_episodes > 2
+            for i in 2:this_branch_episodes
+                push!(parent_branch.times, this_branch.times[i])
+                push!(parent_branch.λ, this_branch.λ[i])
+                push!(parent_branch.μ, this_branch.μ[i])
+            end
+        end
+        parent_branch.outbounds = this_branch.outbounds
+        merge_branches!(parent_branch.outbounds, parent_branch)
+
+    elseif n_children > 1
+        ## dont merge anything, keep going
+        for branch in node.children
+            merge_branches!(branch, parent_branch)
+        end
     else
+        error("error")        
+    end
+
+    nothing
+end
+=#
+
+function merge_branches!(root::Root)
+    for branch in root.children
+        merge_branches!(branch)
+    end
+end
+
+function merge_branches!(branch::Branch)
+    ## the number of offspring for the immediate descendant node
+    n_children = number_of_children(branch.outbounds)
+
+    if n_children == 1
+        ## merge this and descendant branch
+        child_branch = branch.outbounds.children[1]
+
+        branch.times[end] += child_branch.times[1]  
+
+        if length(child_branch.times) > 2
+            for i in 2:length(child_branch.times)
+                push!(branch.λ, child_branch.λ[i])
+                push!(branch.μ, child_branch.μ[i])
+            end
+        end
+        branch.outbounds = child_branch.outbounds
+        merge_branches!(branch)
+
+    elseif n_children == -1
+        ## knuckle, proceed without merge
+        merge_branches!(branch.outbounds)
+    elseif n_children > 1
+        child_node = branch.outbounds
+        for child_branch in child_node.children
+            merge_branches!(child_branch)
+        end
+    end
+end
+
+#=
+function prune_extinct!(node::Root)
+    prune_extinct!(node)
+    
+end
+=#
+
+export reconstruct
+
+function reconstruct(root::Root)
+    tree = deepcopy(root)
+
+    prune_extinct!(tree)
+    merge_branches!(tree)
+
+    # re-assign root if necessary
+    if length(tree.children) == 1 
         new_root = Root()
-        #new_root.left = 
-    end
 
-    if !right_extinct
-        prune_extinct!(right_node)
-    end
+        child_branch = pop!(tree.children) 
 
-    reindex!(root)
-end
+        if child_branch.outbounds isa BranchingEvent 
+            child_node = child_branch.outbounds
 
-
-## @TODO: finish this
-function prune_extinct!(node::Node)
-    left_branch = node.left
-    left_node = left_branch.outbounds
-
-    right_branch = node.right
-    right_node = right_branch.outbounds    
-
-    prune_extinct!(left_node)
-    prune_extinct!(right_node)
-
-    left_branch = node.left
-    left_node = left_branch.outbounds
-
-    right_branch = node.right
-    right_node = right_branch.outbounds    
-
-    one_extinct = xor(left_node isa ExtinctionEvent, right_node isa ExtinctionEvent)
-    both_extinct = (left_node isa ExtinctionEvent) & (right_node isa ExtinctionEvent)
-
-    if one_extinct
-        if left_node isa ExtinctionEvent
-            println("merging parent and right branch")
-            parent_branch = node.inbounds    
-            append!(parent_branch.states, right_branch.states)
-            append!(parent_branch.times, right_branch.times)
-            parent_branch.outbounds = right_node
-            right_node.inbounds = parent_branch
+            for branch in child_node.children
+                push!(new_root.children, branch)
+            end
+        else
+            error("can not re-assign root if there is only no or only one extant or sampled tip")
         end
 
-        if right_node isa ExtinctionEvent
-            println("merging parent and left branch")
-            parent_branch = node.inbounds
-            append!(parent_branch.states, left_branch.states)
-            append!(parent_branch.times, left_branch.times)
-            parent_branch.outbounds = left_node
-            left_node.inbounds = parent_branch
-        end
-    elseif both_extinct
-        println("both children extinct")
-        parent_branch = node.inbounds
-        new_fake_extinction_event = ExtinctionEvent()
-        parent_branch.outbounds = new_fake_extinction_event
-        new_fake_extinction_event.inbounds = parent_branch
-        new_fake_extinction_event.label = "fake"      
+        return(new_root)
+    else
+        return(tree)
     end
 end
-
-function prune_extinct!(node::ExtinctionEvent) end
-function prune_extinct!(node::ExtantTip) end
-
-
-
-
-
-
-
