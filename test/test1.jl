@@ -62,3 +62,73 @@ function baz()
 end
 
 baz()
+
+
+dλ = LogNormal(log(0.3), 0.1)
+dμ = LogNormal(log(0.2), 0.1)
+
+model = BirthDeathShiftContinuous(
+    dλ,
+    dμ,
+    0.01,
+    0.01,
+)
+
+using Random
+Random.seed!(124); tree = simulate(model, 0.2, 0.1, 40.0, 100_000)
+
+tree = simulate(model, 0.2, 0.1, 40.0, 100_000)
+
+tr = reconstruct(tree)
+
+
+
+number_of_events(tree)
+
+number_of_events(tr)
+
+treeheight(tree)
+treeheight(tr)
+
+newick(tr)
+
+tr.children
+
+prune_extinct!(tree)
+merge_branches!(tree)
+
+tree
+
+tree
+
+
+root = Root()
+
+bl = Branch(root)
+ex = ExtinctionEvent(bl, "extinct")
+
+br = Branch(root)
+tip = ExtantTip(br, "homo sapiens")
+
+root
+
+prune_extinct!(root)
+
+reconstruct(root)
+
+
+
+
+tree
+
+number_of_edges(tree)
+merge_branches!(tree)
+
+tree
+
+number_of_events(tree) / treelength(tree)
+
+
+
+et = ExtantTip()
+
