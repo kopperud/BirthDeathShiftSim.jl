@@ -88,19 +88,24 @@ end
 export number_of_edges
 
 function number_of_edges(tree::Root)
-    n = 0
-    n = nedges_po(tree, n)
-    return(n)
+    counter = [0]
+
+    number_of_edges!(tree, counter)
+    return(counter[1])
 end
 
-function nedges_po(::TipNode,n::Int64) 
-    return(n)
+function number_of_edges!(node::N, counter::Vector{Int64}) where {N <: BranchingEvent} 
+    for branch in node.children
+        number_of_edges!(branch, counter)
+    end
 end
 
-function nedges_po(node::T, n::Int64) where {T <: InternalNode}
-    n = nedges_po(node.left.outbounds, n)
-    n = nedges_po(node.right.outbounds, n)
-    return(n+2)
+function number_of_edges!(branch::Branch, counter::Vector{Int64})
+    counter[1] += 1
+    number_of_edges!(branch.outbounds, counter)
+end
+
+function number_of_edges!(node::T, counter::Vector{Int64}) where {T <: TipNode}
 end
 
 
