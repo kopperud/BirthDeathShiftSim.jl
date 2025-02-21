@@ -25,5 +25,6 @@ include("write/newick.jl")
 include("simulate/simulate_constant.jl")
 include("simulate/continuous_exponential.jl")
 include("simulate/continuous.jl")
+include("simulate/simulate_bds.jl")
 
 end # module
